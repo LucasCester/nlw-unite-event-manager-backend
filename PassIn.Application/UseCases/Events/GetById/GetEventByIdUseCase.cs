@@ -7,13 +7,18 @@ namespace PassIn.Application.UseCases.Events.GetById
 {
     public class GetEventByIdUseCase
     {
+        private readonly PassInDbContext _dbContext;
+
+        public GetEventByIdUseCase()
+        {
+            _dbContext = new PassInDbContext();
+        }
+
         public ResponseEventJson Execute(Guid id)
         {
-            var dbContext = new PassInDbContext();
-
-            var entity = dbContext.Events.FirstOrDefault(e => e.Id == id);
+            var entity = _dbContext.Events.Include(e => e.Attendees).FirstOrDefault(e => e.Id.Equals(id));
             if (entity == null)
-                throw new PassInException("There's no event with this Id.");
+                throw new NotFoundException("There's no event with this Id.");
 
             return new ResponseEventJson()
             {
@@ -21,7 +26,7 @@ namespace PassIn.Application.UseCases.Events.GetById
                 Title = entity.Title,
                 Details = entity.Details,
                 MaximumAttendees = entity.Maximum_Attendees,
-                AttendeesAmount = -1
+                AttendeesAmount = entity.Attendees.Count()
             };
         }
     }

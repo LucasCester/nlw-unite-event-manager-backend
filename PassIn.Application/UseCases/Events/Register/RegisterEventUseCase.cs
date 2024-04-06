@@ -8,11 +8,16 @@ namespace PassIn.Application.UseCases.Events.Register
 {
     public class RegisterEventUseCase
     {
-        public ResponseRegisteredEventJson Execute(RequestEventJson request)
+        private readonly PassInDbContext _dbContext;
+
+        public RegisterEventUseCase()
+        {
+            _dbContext = new PassInDbContext();
+        }
+
+        public ResponseRegisteredJson Execute(RequestEventJson request)
         {
             Validate(request);
-
-            var dbContext = new PassInDbContext();
 
             var entity = new Event()
             {
@@ -22,10 +27,10 @@ namespace PassIn.Application.UseCases.Events.Register
                 Slug = request.Title.ToLower().Replace(" ", "-"),
             };
 
-            dbContext.Events.Add(entity);
-            dbContext.SaveChanges();
+            _dbContext.Events.Add(entity);
+            _dbContext.SaveChanges();
 
-            return new ResponseRegisteredEventJson()
+            return new ResponseRegisteredJson()
             {
                 Id = entity.Id
             };
@@ -34,13 +39,13 @@ namespace PassIn.Application.UseCases.Events.Register
         private void Validate(RequestEventJson request)
         {
             if (request.MaximumAttendees <= 0)
-                throw new PassInException("Invalid attendes number.");
+                throw new ErrorOnValidationException("Invalid attendes number.");
 
             if (string.IsNullOrWhiteSpace(request.Title))
-                throw new PassInException("Invalid title.");
+                throw new ErrorOnValidationException("Invalid title.");
 
             if (string.IsNullOrWhiteSpace(request.Details))
-                throw new PassInException("Invalid details.");
+                throw new ErrorOnValidationException("Invalid details.");
         }
     }
 }

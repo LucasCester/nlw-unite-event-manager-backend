@@ -3,7 +3,6 @@ using PassIn.Application.UseCases.Events.GetById;
 using PassIn.Application.UseCases.Events.Register;
 using PassIn.Communication.Requests;
 using PassIn.Communication.Responses;
-using PassIn.Exceptions;
 
 namespace PassIn.Api.Controllers
 {
@@ -12,25 +11,14 @@ namespace PassIn.Api.Controllers
     public class EventsController : ControllerBase
     {
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseRegisteredEventJson), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseRegisteredJson), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
         public IActionResult Register([FromBody] RequestEventJson request)
         {
-            try
-            {
-                var useCase = new RegisterEventUseCase();
-                var response = useCase.Execute(request);
+            var useCase = new RegisterEventUseCase();
+            var response = useCase.Execute(request);
 
-                return Created(string.Empty, response);
-            }
-            catch(PassInException ex)
-            {
-                return BadRequest(new ResponseErrorJson(ex.Message));
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorJson("Unknown error"));
-            }
+            return Created(string.Empty, response);
         }
 
         [HttpGet]
@@ -39,21 +27,10 @@ namespace PassIn.Api.Controllers
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
         public IActionResult GetById([FromRoute] Guid id)
         {
-            try
-            {
-                var useCase = new GetEventByIdUseCase();
-                var result = useCase.Execute(id);
+            var useCase = new GetEventByIdUseCase();
+            var result = useCase.Execute(id);
 
-                return Ok(result);
-            }
-            catch (PassInException ex)
-            {
-                return BadRequest(new ResponseErrorJson(ex.Message));
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorJson("Unknown error"));
-            }
+            return Ok(result);
         }
     }
 }
